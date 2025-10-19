@@ -20,6 +20,10 @@ class OccasionPayload(BaseModel):
         ...,
         description="Target audience description",
     )
+    objective_weights: dict[str, float] = Field(
+        default_factory=dict,
+        description="Weights for business objectives to optimise",
+    )
 
 
 class RecommendationResponse(BaseModel):
@@ -28,3 +32,22 @@ class RecommendationResponse(BaseModel):
     model_id: str
     name: str
     provider: str
+    capabilities: dict[str, float] = Field(default_factory=dict)
+
+
+class ModelRegistrationPayload(BaseModel):
+    """Payload for registering or updating recommendation models."""
+
+    model_id: str
+    name: str
+    provider: str
+    capabilities: dict[str, float] = Field(default_factory=dict)
+
+
+class OccasionRegistrationPayload(BaseModel):
+    """Payload for registering or updating occasions."""
+
+    occasion_id: str
+    channel: str
+    audience: str
+    objective_weights: dict[str, float] = Field(default_factory=dict)
