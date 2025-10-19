@@ -10,6 +10,12 @@ from best_occasion.registry.occasions import Occasion
 class EmbeddingBackend(Protocol):
     """Defines the interface for embedding providers."""
 
+    @property
+    def dimension(self) -> int:
+        """Return the dimensionality of produced vectors."""
+
+        ...
+
     def encode(self, payload: dict[str, str]) -> list[float]:
         """Return embedding vector for given payload."""
 
