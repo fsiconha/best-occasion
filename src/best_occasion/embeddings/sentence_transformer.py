@@ -21,7 +21,11 @@ class SentenceTransformerEmbeddingService(EmbeddingService):
         self._instruction = instruction.strip() if instruction else ""
         self._normalize = normalize
         self._model = SentenceTransformer(model_name)
-        self._dimension = int(self._model.get_sentence_embedding_dimension())
+        dimension = self._model.get_sentence_embedding_dimension()
+        if dimension is None:
+            msg = "SentenceTransformer returned undefined embedding dimension"
+            raise ValueError(msg)
+        self._dimension = int(dimension)
 
     @property
     def dimension(self) -> int:
