@@ -6,6 +6,10 @@ class Settings(BaseSettings):
 
     environment: str = "development"
     vector_store_url: str | None = None
+    embedding_model_name: str = "intfloat/e5-small-v2"
+    embedding_instruction: str = (
+        "Represent the digital recommendation occasion for retrieval:"
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="BEST_OCCASION_",

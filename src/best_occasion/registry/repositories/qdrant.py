@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 from dataclasses import dataclass, field
 from typing import Iterable
 
@@ -54,15 +55,15 @@ class QdrantVectorStore(VectorStoreRepository):
         query_vector = self.embedding.encode(
             self._occasion_embedding_payload(occasion)
         )
-        results = self.client.search(
+        results = self.client.query_points(
             collection_name=self.model_collection,
-            query_vector=query_vector,
-            limit=1,
+            query=query_vector,
             with_payload=True,
+            limit=1,
         )
-        if not results:
+        if not results.points:
             return None
-        record = results[0]
+        record = results.points[0]
         payload = record.payload or {}
         payload_capabilities = payload.get("capabilities") or {}
         return RecommendationModel(
@@ -82,7 +83,7 @@ class QdrantVectorStore(VectorStoreRepository):
         payload = self._model_payload(model)
         vector = self.embedding.encode(self._model_embedding_payload(model))
         return qmodels.PointStruct(
-            id=model.model_id,
+            id=self._normalize_id(model.model_id),
             vector=vector,
             payload=payload,
         )
@@ -93,7 +94,7 @@ class QdrantVectorStore(VectorStoreRepository):
             self._occasion_embedding_payload(occasion)
         )
         return qmodels.PointStruct(
-            id=occasion.occasion_id,
+            id=self._normalize_id(occasion.occasion_id),
             vector=vector,
             payload=payload,
         )
@@ -145,10 +146,13 @@ class QdrantVectorStore(VectorStoreRepository):
     def _ensure_collection(self, name: str) -> None:
         if name in self._initialized_collections:
             return
+        exists = False
         try:
-            self.client.get_collection(name)
-        except UnexpectedResponse:
-            self.client.recreate_collection(
+            exists = self.client.collection_exists(name)
+        except (UnexpectedResponse, ValueError):
+            exists = False
+        if not exists:
+            self.client.create_collection(
                 collection_name=name,
                 vectors_config=qmodels.VectorParams(
                     size=self.embedding.dimension,
@@ -156,3 +160,7 @@ class QdrantVectorStore(VectorStoreRepository):
                 ),
             )
         self._initialized_collections.add(name)
+
+    @staticmethod
+    def _normalize_id(raw_id: str) -> str:
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, f"best-occasion:{raw_id}"))

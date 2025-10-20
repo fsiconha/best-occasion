@@ -16,7 +16,7 @@ router = APIRouter(prefix="/registry", tags=["registry"])
 
 @router.post(
     "/models",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_202_ACCEPTED,
 )
 def register_model(
     models: list[ModelRegistrationPayload] = Body(...),
@@ -38,7 +38,7 @@ def register_model(
 
 @router.post(
     "/occasions",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_202_ACCEPTED,
 )
 def register_occasion(
     occasions: list[OccasionRegistrationPayload] = Body(...),
