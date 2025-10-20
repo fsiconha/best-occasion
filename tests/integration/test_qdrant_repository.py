@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from qdrant_client import QdrantClient
 
-from best_occasion.embeddings.hash import HashEmbeddingService
+from best_occasion.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddingService,
+)
 from best_occasion.matchmaking.engine import MatchmakingEngine
 from best_occasion.registry.models import RecommendationModel
 from best_occasion.registry.occasions import Occasion
@@ -13,7 +15,7 @@ from best_occasion.services.recommendation import RecommendationService
 
 
 def test_recommendation_returns_best_model() -> None:
-    embedding = HashEmbeddingService(dimension=16)
+    embedding = SentenceTransformerEmbeddingService()
     repository = QdrantVectorStore(
         client=QdrantClient(path=":memory:"),
         embedding=embedding,

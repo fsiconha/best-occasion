@@ -6,7 +6,9 @@ from qdrant_client import QdrantClient
 
 from best_occasion.config.settings import Settings, get_settings
 from best_occasion.embeddings.base import EmbeddingService
-from best_occasion.embeddings.hash import HashEmbeddingService
+from best_occasion.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddingService,
+)
 from best_occasion.matchmaking.engine import MatchmakingEngine
 from best_occasion.registry.repositories.qdrant import QdrantVectorStore
 from best_occasion.registry.repositories.vector_store import (
@@ -37,7 +39,11 @@ def get_qdrant_client() -> QdrantClient:
 def get_embedding_service() -> EmbeddingService:
     """Provide embedding service used across the application."""
 
-    return HashEmbeddingService()
+    settings = get_cached_settings()
+    return SentenceTransformerEmbeddingService(
+        model_name=settings.embedding_model_name,
+        instruction=settings.embedding_instruction,
+    )
 
 
 @lru_cache

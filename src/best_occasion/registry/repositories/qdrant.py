@@ -55,15 +55,15 @@ class QdrantVectorStore(VectorStoreRepository):
         query_vector = self.embedding.encode(
             self._occasion_embedding_payload(occasion)
         )
-        results = self.client.search(
+        results = self.client.query_points(
             collection_name=self.model_collection,
-            query_vector=query_vector,
-            limit=1,
+            query=query_vector,
             with_payload=True,
+            limit=1,
         )
-        if not results:
+        if not results.points:
             return None
-        record = results[0]
+        record = results.points[0]
         payload = record.payload or {}
         payload_capabilities = payload.get("capabilities") or {}
         return RecommendationModel(
