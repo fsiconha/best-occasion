@@ -2,7 +2,7 @@
 name = "best-occasion"
 version = "0.1.0"
 description = "Toolkit for selecting the best recommendation model for a given context."
-authors = ["Felipe Souza <you@example.com>"]
+authors = ["Siconha <you@example.com>"]
 readme = "README.md"
 packages = [{ include = "best_occasion", from = "src" }]
 
