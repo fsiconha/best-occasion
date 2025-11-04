@@ -6,23 +6,11 @@ from pydantic import BaseModel, Field
 
 
 class OccasionPayload(BaseModel):
-    """Input payload describing the occasion to be matched."""
+    """Input payload containing the target occasion identifier."""
 
     occasion_id: str = Field(
         ...,
-        description="Unique identifier for the occasion",
-    )
-    channel: str = Field(
-        ...,
-        description="Channel or page where the model will run",
-    )
-    audience: str = Field(
-        ...,
-        description="Target audience description",
-    )
-    objective_weights: dict[str, float] = Field(
-        default_factory=dict,
-        description="Weights for business objectives to optimise",
+        description="Identifier of the stored occasion to evaluate",
     )
 
 
@@ -31,8 +19,18 @@ class RecommendationResponse(BaseModel):
 
     model_id: str
     name: str
-    provider: str
-    capabilities: dict[str, float] = Field(default_factory=dict)
+    journey: str = Field(
+        ...,
+        description=(
+            "CRM journey where the model applies (e.g. 'recompra')."
+        ),
+    )
+    objectives: list[str] = Field(
+        default_factory=list,
+        description=(
+            "List of objectives the model optimises (e.g. ['ctr'])."
+        ),
+    )
 
 
 class ModelRegistrationPayload(BaseModel):
@@ -40,8 +38,18 @@ class ModelRegistrationPayload(BaseModel):
 
     model_id: str
     name: str
-    provider: str
-    capabilities: dict[str, float] = Field(default_factory=dict)
+    journey: str = Field(
+        ...,
+        description=(
+            "CRM journey tag for the model (e.g. 'fidelizacao')."
+        ),
+    )
+    objectives: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Objectives supported by the model as a list of strings."
+        ),
+    )
 
 
 class OccasionRegistrationPayload(BaseModel):

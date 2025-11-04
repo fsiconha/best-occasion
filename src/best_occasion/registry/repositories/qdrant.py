@@ -52,9 +52,9 @@ class QdrantVectorStore(VectorStoreRepository):
         occasion: Occasion,
     ) -> RecommendationModel | None:
         self._ensure_collection(self.model_collection)
-        query_vector = self.embedding.encode(
-            self._occasion_embedding_payload(occasion)
-        )
+        query_vector = self._retrieve_occasion_vector(occasion.occasion_id)
+        if query_vector is None:
+            return None
         results = self.client.query_points(
             collection_name=self.model_collection,
             query=query_vector,
@@ -64,17 +64,7 @@ class QdrantVectorStore(VectorStoreRepository):
         if not results.points:
             return None
         record = results.points[0]
-        payload = record.payload or {}
-        payload_capabilities = payload.get("capabilities") or {}
-        return RecommendationModel(
-            model_id=str(payload.get("model_id", record.id)),
-            name=str(payload.get("name", "")),
-            provider=str(payload.get("provider", "")),
-            capabilities={
-                key: float(value)
-                for key, value in payload_capabilities.items()
-            },
-        )
+        return self._record_to_model(record)
 
     def _model_to_point(
         self,
@@ -99,12 +89,52 @@ class QdrantVectorStore(VectorStoreRepository):
             payload=payload,
         )
 
+    def _retrieve_occasion_vector(
+        self,
+        occasion_id: str,
+    ) -> list[float] | None:
+        self._ensure_collection(self.occasion_collection)
+        normalized_id = self._normalize_id(occasion_id)
+        records = self.client.retrieve(
+            collection_name=self.occasion_collection,
+            ids=[normalized_id],
+            with_payload=False,
+            with_vectors=True,
+        )
+        if not records:
+            return None
+        vector = records[0].vector
+        if vector is None:
+            return None
+        if isinstance(vector, dict):
+            vector = next(iter(vector.values()), None)
+        if vector is None:
+            return None
+        return [float(value) for value in vector]
+
+    def _record_to_model(
+        self,
+        record: qmodels.ScoredPoint,
+    ) -> RecommendationModel:
+        payload = record.payload or {}
+        payload_objectives = payload.get("objectives") or []
+        return RecommendationModel(
+            model_id=str(payload.get("model_id", record.id)),
+            name=str(payload.get("name", "")),
+            journey=str(payload.get("journey", "")),
+            objectives=tuple(
+                str(obj)
+                for obj in payload_objectives
+                if isinstance(obj, str)
+            ),
+        )
+
     def _model_payload(self, model: RecommendationModel) -> dict[str, object]:
         return {
             "model_id": model.model_id,
             "name": model.name,
-            "provider": model.provider,
-            "capabilities": dict(model.capabilities),
+            "journey": model.journey,
+            "objectives": list(model.objectives),
         }
 
     def _occasion_payload(self, occasion: Occasion) -> dict[str, object]:
@@ -122,10 +152,9 @@ class QdrantVectorStore(VectorStoreRepository):
         return {
             "model_id": model.model_id,
             "name": model.name,
-            "provider": model.provider,
-            "capabilities": json.dumps(
-                dict(model.capabilities),
-                sort_keys=True,
+            "journey": model.journey,
+            "objectives": json.dumps(
+                sorted(model.objectives),
             ),
         }
 

@@ -28,8 +28,8 @@ def register_model(
         RecommendationModel(
             model_id=item.model_id,
             name=item.name,
-            provider=item.provider,
-            capabilities=item.capabilities,
+            journey=item.journey,
+            objectives=tuple(item.objectives),
         )
         for item in models
     ]
