@@ -20,12 +20,7 @@ def recommend_model(
 ) -> RecommendationResponse:
     """Return the best model for the provided occasion payload."""
 
-    occasion = Occasion(
-        occasion_id=payload.occasion_id,
-        channel=payload.channel,
-        audience=payload.audience,
-        objective_weights=payload.objective_weights,
-    )
+    occasion = Occasion(occasion_id=payload.occasion_id)
     recommended = service.recommend(occasion)
     if recommended is None:
         raise HTTPException(
@@ -35,6 +30,6 @@ def recommend_model(
     return RecommendationResponse(
         model_id=recommended.model_id,
         name=recommended.name,
-        provider=recommended.provider,
-        capabilities=dict(recommended.capabilities),
+        journey=recommended.journey,
+        objectives=list(recommended.objectives),
     )

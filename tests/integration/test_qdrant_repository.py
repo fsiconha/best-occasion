@@ -23,8 +23,8 @@ def test_recommendation_returns_best_model() -> None:
     model = RecommendationModel(
         model_id="model-1",
         name="Baseline recommender",
-        provider="in-house",
-        capabilities={"ctr": 0.8, "conversion": 0.6},
+        journey="fidelizacao",
+        objectives=("ctr", "conversion"),
     )
     repository.upsert_models([model])
     occasion = Occasion(
@@ -33,6 +33,7 @@ def test_recommendation_returns_best_model() -> None:
         audience="new_users",
         objective_weights={"ctr": 1.0},
     )
+    repository.upsert_occasions([occasion])
     service = RecommendationService(engine=MatchmakingEngine(repository))
 
     recommendation = service.recommend(occasion)
@@ -40,4 +41,4 @@ def test_recommendation_returns_best_model() -> None:
     assert recommendation is not None
     assert recommendation.model_id == model.model_id
     assert recommendation.name == model.name
-    assert recommendation.capabilities["ctr"] == model.capabilities["ctr"]
+    assert recommendation.objectives == model.objectives

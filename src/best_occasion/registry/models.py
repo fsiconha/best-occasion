@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Mapping
 
 
 @dataclass(slots=True)
@@ -8,5 +7,5 @@ class RecommendationModel:
 
     model_id: str
     name: str
-    provider: str
-    capabilities: Mapping[str, float]
+    journey: str
+    objectives: tuple[str, ...]
